@@ -165,7 +165,7 @@ export function AnalysisView() {
   const [diseasePage, setDiseasePage] = useState(1);
   const [hiddenLines, setHiddenLines] = useState<Record<string, boolean>>({});
 
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
   const paginatedDept = deptDistribution.slice((deptPage - 1) * ITEMS_PER_PAGE, deptPage * ITEMS_PER_PAGE);
   const paginatedDisease = diseaseDistribution.slice((diseasePage - 1) * ITEMS_PER_PAGE, diseasePage * ITEMS_PER_PAGE);
   const trendDataKey = trendMetric === '改善率' ? '指标改善' : trendMetric;
@@ -673,7 +673,7 @@ export function AnalysisView() {
           </div>
 
           <div className="flex items-end gap-2 mt-6 border-t border-slate-200 pt-6">
-            <h2 className="text-base font-bold text-slate-800 tracking-tight shrink-0">患者群体体质偏颇纠正趋势</h2>
+            <h2 className="text-base font-bold text-slate-800 tracking-tight shrink-0">体质演变趋势分析</h2>
             <span className="text-xs font-normal text-slate-500 mb-[2px]">融合体检、慢病监测、宣教随访、医患互动、药事用药、智能体咨询等多源回流追踪数据，实现体质特征、健康风险与干预效果的动态分析。</span>
           </div>
 
@@ -838,7 +838,7 @@ export function AnalysisView() {
                          <TableHeader>
                            <TableRow>
                              <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">转归路径</TableHead>
-                             <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">改善比例</TableHead>
+                             <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">占改善总数比</TableHead>
                              <TableHead className="h-8 text-[11px] px-2 text-slate-500 text-right whitespace-nowrap">推荐追踪服务</TableHead>
                            </TableRow>
                          </TableHeader>
@@ -863,7 +863,7 @@ export function AnalysisView() {
                          <TableHeader>
                            <TableRow>
                              <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">转归路径</TableHead>
-                             <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">加重比例</TableHead>
+                             <TableHead className="h-8 text-[11px] px-2 text-slate-500 whitespace-nowrap">占加重总数比</TableHead>
                              <TableHead className="h-8 text-[11px] px-2 text-slate-500 text-right whitespace-nowrap">建议预警处置</TableHead>
                            </TableRow>
                          </TableHeader>

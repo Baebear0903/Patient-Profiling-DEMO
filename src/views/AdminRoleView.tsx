@@ -126,7 +126,7 @@ const PERMISSION_TREE = {
         { id: 'b_role_view', label: '查看角色列表' },
         { id: 'b_role_create', label: '新增角色' },
         { id: 'b_role_edit', label: '配置权限' },
-        { id: 'b_role_members', label: '成员管理' }
+        { id: 'b_role_members', label: '人员管理' }
       ]
     }
   ]
@@ -271,32 +271,34 @@ export function AdminRoleView() {
       }
     >
       <div className="h-full min-h-0 flex-1 overflow-auto rounded-md border border-slate-200 bg-white">
-        <Table>
+        <Table className="min-w-[800px] table-fixed text-left">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">角色ID</TableHead>
-              <TableHead>角色名称</TableHead>
-              <TableHead>权限描述</TableHead>
-              <TableHead>关联人数</TableHead>
-              <TableHead className="text-right">操作</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[15%] bg-slate-50 p-3 text-[11px] text-slate-500">角色ID</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[20%] bg-slate-50 p-3 text-[11px] text-slate-500">角色名称</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[30%] bg-slate-50 p-3 text-[11px] text-slate-500">权限描述</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[15%] bg-slate-50 p-3 text-[11px] text-slate-500">关联人数</TableHead>
+              <TableHead className="sticky right-0 top-0 z-20 w-[20%] bg-slate-50 p-3 text-[11px] text-slate-500">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRoles.map((role: any) => (
-              <TableRow key={role.id}>
-                <TableCell className="font-mono text-slate-500">{role.id}</TableCell>
-                <TableCell className="font-semibold">{role.name}</TableCell>
-                <TableCell className="text-slate-500">{role.desc}</TableCell>
-                <TableCell>{role.count} 人</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" className="text-[#0092B9] h-8" onClick={() => handleOpenPermissions(role)}>配置权限</Button>
-                  <Button variant="ghost" size="sm" className="text-slate-600 h-8">成员</Button>
+              <TableRow key={role.id} className="group">
+                <TableCell className="p-3 font-mono text-xs text-slate-500">{role.id}</TableCell>
+                <TableCell className="p-3 font-semibold text-xs text-slate-800">{role.name}</TableCell>
+                <TableCell className="p-3 text-xs text-slate-500">{role.desc}</TableCell>
+                <TableCell className="p-3 text-xs">{role.count} 人</TableCell>
+                <TableCell className="sticky right-0 z-10 bg-white p-3 group-hover:bg-slate-50">
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="xs" onClick={() => handleOpenPermissions(role)}>配置权限</Button>
+                    <Button variant="ghost" size="xs">人员管理</Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
             {filteredRoles.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-slate-500">
+                <TableCell colSpan={5} className="h-24 text-center text-sm text-slate-500">
                   没有找到符合条件的角色
                 </TableCell>
               </TableRow>

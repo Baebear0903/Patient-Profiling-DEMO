@@ -50,47 +50,6 @@ export function AdminOperationView() {
       <div className="h-full min-h-0 flex-1 overflow-auto rounded-md border border-slate-200 bg-white p-8">
         <div className="max-w-2xl space-y-8">
           <div>
-            <h3 className="text-lg font-medium text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
-              <Database className="w-5 h-5 text-slate-500" />
-              <span>初始数据配置</span>
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-800">恢复默认数据</p>
-                  <p className="text-sm text-slate-500">恢复系统初始的数据状态</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline"
-                    size="sm" 
-                    onClick={handleResetData}
-                  >
-                    <RefreshCcw className="w-4 h-4 mr-1" /> 
-                    恢复默认
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-800">清空系统数据</p>
-                  <p className="text-sm text-slate-500">完全清空当前浏览器的所有数据缓存与修改</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline"
-                    size="sm" 
-                    onClick={handleClearData} 
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" /> 
-                    清空数据
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
             <h3 className="text-lg font-medium text-slate-900 border-b pb-2 mb-4">定时任务配置</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -171,6 +130,47 @@ export function AdminOperationView() {
                     setSmsStatus(smsStatus === '已连接' ? '已断开' : '已连接');
                     toast.success(`网关状态已更新为: ${smsStatus === '已连接' ? '已断开' : '已连接'}`);
                   }}>检测</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+              <Database className="w-5 h-5 text-slate-500" />
+              <span>初始数据配置</span>
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-slate-800">恢复默认数据</p>
+                  <p className="text-sm text-slate-500">恢复系统初始的数据状态</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline"
+                    size="sm" 
+                    onClick={handleResetData}
+                  >
+                    <RefreshCcw className="w-4 h-4 mr-1" /> 
+                    恢复默认
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-slate-800">清空系统数据</p>
+                  <p className="text-sm text-slate-500">完全清空当前浏览器的所有数据缓存与修改</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline"
+                    size="sm" 
+                    onClick={handleClearData} 
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" /> 
+                    清空数据
+                  </Button>
                 </div>
               </div>
             </div>

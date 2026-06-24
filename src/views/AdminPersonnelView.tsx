@@ -40,34 +40,36 @@ export function AdminPersonnelView() {
       }
     >
       <div className="h-full min-h-0 flex-1 overflow-auto rounded-md border border-slate-200 bg-white">
-        <Table>
+        <Table className="min-w-[800px] table-fixed text-left">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">用户ID</TableHead>
-              <TableHead>姓名</TableHead>
-              <TableHead>所属科室</TableHead>
-              <TableHead>关联角色</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead className="text-right">操作</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[15%] bg-slate-50 p-3 text-[11px] text-slate-500">用户ID</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[20%] bg-slate-50 p-3 text-[11px] text-slate-500">姓名</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[20%] bg-slate-50 p-3 text-[11px] text-slate-500">所属科室</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[20%] bg-slate-50 p-3 text-[11px] text-slate-500">关联角色</TableHead>
+              <TableHead className="sticky top-0 z-10 w-[10%] bg-slate-50 p-3 text-[11px] text-slate-500">状态</TableHead>
+              <TableHead className="sticky right-0 top-0 z-20 w-[15%] bg-slate-50 p-3 text-[11px] text-slate-500">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user: any) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-mono text-slate-500">{user.id}</TableCell>
-                <TableCell className="font-semibold">{user.name}</TableCell>
-                <TableCell>{user.dept}</TableCell>
-                <TableCell>
-                  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600 border border-slate-200">
+              <TableRow key={user.id} className="group">
+                <TableCell className="p-3 font-mono text-xs text-slate-500">{user.id}</TableCell>
+                <TableCell className="p-3 font-semibold text-xs text-slate-800">{user.name}</TableCell>
+                <TableCell className="p-3 text-xs text-slate-600">{user.dept}</TableCell>
+                <TableCell className="p-3">
+                  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 border border-slate-200">
                     {user.role}
                   </span>
                 </TableCell>
-                <TableCell>
-                  <span className="text-emerald-600">{user.status}</span>
+                <TableCell className="p-3">
+                  <span className="text-[10px] text-emerald-600">{user.status}</span>
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" className="text-[#0092B9] h-8">编辑</Button>
-                  <Button variant="ghost" size="sm" className="text-red-600 h-8">停用</Button>
+                <TableCell className="sticky right-0 z-10 bg-white p-3 group-hover:bg-slate-50">
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="xs">编辑</Button>
+                    <Button variant="ghost" size="xs" className="text-red-600">停用</Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

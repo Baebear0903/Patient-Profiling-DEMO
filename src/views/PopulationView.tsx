@@ -196,7 +196,13 @@ export function PopulationView() {
       );
       return hasAllMustHave && !hasAnyExclude;
     });
-  }, [appliedExcludeArgs, appliedMustHaveArgs]);
+  }, [appliedExcludeArgs, appliedMustHaveArgs, patients]);
+
+  const ITEMS_PER_PAGE = 10;
+  const [displayPatientsPage, setDisplayPatientsPage] = useState(1);
+  const displayPatientsTotalPages = Math.ceil(displayPatients.length / ITEMS_PER_PAGE);
+  const safeDisplayPatientsPage = Math.min(displayPatientsPage, Math.max(displayPatientsTotalPages, 1));
+  const paginatedDisplayPatients = displayPatients.slice((safeDisplayPatientsPage - 1) * ITEMS_PER_PAGE, safeDisplayPatientsPage * ITEMS_PER_PAGE);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -401,21 +407,9 @@ export function PopulationView() {
       }
       className="flex h-full flex-col gap-4"
     >
-      <TabsList
-        variant="line"
-        className="h-auto w-full justify-start rounded-lg border border-slate-200 bg-white px-2 shadow-sm"
-      >
-        <TabsTrigger
-          value="dynamic"
-          className="h-11 flex-none px-4 text-sm font-bold"
-        >
-          患者群体圈选
-        </TabsTrigger>
-        <TabsTrigger
-          ref={snapshotsTabRef}
-          value="snapshots"
-          className="h-11 flex-none px-4 text-sm font-bold"
-        >
+      <TabsList className="w-fit shrink-0">
+        <TabsTrigger value="dynamic">患者群体圈选</TabsTrigger>
+        <TabsTrigger ref={snapshotsTabRef} value="snapshots">
           人群快照管理
         </TabsTrigger>
       </TabsList>
@@ -766,7 +760,7 @@ export function PopulationView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {displayPatients.map((patient) => (
+                    {paginatedDisplayPatients.map((patient) => (
                       <TableRow key={patient.id}>
                         <TableCell className="px-4">
                           <div className="font-semibold text-slate-800">
@@ -833,23 +827,13 @@ export function PopulationView() {
               )}
             </div>
             {appliedMustHaveArgs.length > 0 ? (
-              <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/50 p-3">
+              <div className="flex items-center justify-end border-t border-slate-200 bg-slate-50/50 p-3">
                 <CompactPagination
-                  page={1}
-                  pageSize={Math.max(1, displayPatients.length)}
+                  page={safeDisplayPatientsPage}
+                  pageSize={ITEMS_PER_PAGE}
                   total={displayPatients.length}
-                  onPageChange={() => undefined}
+                  onPageChange={setDisplayPatientsPage}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label="当前页 1"
-                  aria-current="page"
-                  disabled
-                >
-                  1
-                </Button>
               </div>
             ) : null}
           </section>

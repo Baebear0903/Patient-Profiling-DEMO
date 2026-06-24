@@ -154,7 +154,7 @@ const DEFAULT_CONDITION: RuleCondition = {
   operator: '包含',
   value: '气虚质',
 };
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 function createEmptyTag(): EditableTag {
   return {
@@ -188,46 +188,66 @@ function toEditableTag(tag: any): EditableTag {
 }
 
 function PatientTable({patients}: {patients: PatientPreview[]}) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.ceil(patients.length / pageSize);
+  const safePage = Math.min(currentPage, Math.max(totalPages, 1));
+  const paginatedPatients = patients.slice((safePage - 1) * pageSize, safePage * pageSize);
+
   return (
-    <Table className="min-w-[700px] whitespace-nowrap text-left">
-      <TableHeader>
-        <TableRow className="bg-slate-50 text-[11px] text-slate-500">
-          <TableHead className="px-4 py-3">患者ID</TableHead>
-          <TableHead className="px-4 py-3">门诊号</TableHead>
-          <TableHead className="px-4 py-3">姓名</TableHead>
-          <TableHead className="px-4 py-3">性别</TableHead>
-          <TableHead className="px-4 py-3">年龄</TableHead>
-          <TableHead className="px-4 py-3">最近就诊时间</TableHead>
-          <TableHead className="px-4 py-3">最近就诊科室</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {patients.map((patient) => (
-          <TableRow
-            key={`${patient.id}-${patient.visitNo}`}
-            className="text-xs text-slate-700"
-          >
-            <TableCell className="px-4 py-3 font-mono text-slate-500">
-              {patient.id}
-            </TableCell>
-            <TableCell className="px-4 py-3 font-mono">
-              {patient.visitNo}
-            </TableCell>
-            <TableCell className="px-4 py-3 font-medium">
-              {patient.name}
-            </TableCell>
-            <TableCell className="px-4 py-3">{patient.gender}</TableCell>
-            <TableCell className="px-4 py-3">{patient.age}</TableCell>
-            <TableCell className="px-4 py-3 text-slate-500">
-              {patient.lastVisitTime}
-            </TableCell>
-            <TableCell className="px-4 py-3">
-              {patient.lastVisitDept}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-auto">
+        <Table className="min-w-[700px] whitespace-nowrap text-left">
+          <TableHeader>
+            <TableRow className="bg-slate-50 text-[11px] text-slate-500">
+              <TableHead className="px-4 py-3">患者ID</TableHead>
+              <TableHead className="px-4 py-3">门诊号</TableHead>
+              <TableHead className="px-4 py-3">姓名</TableHead>
+              <TableHead className="px-4 py-3">性别</TableHead>
+              <TableHead className="px-4 py-3">年龄</TableHead>
+              <TableHead className="px-4 py-3">最近就诊时间</TableHead>
+              <TableHead className="px-4 py-3">最近就诊科室</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedPatients.map((patient) => (
+              <TableRow
+                key={`${patient.id}-${patient.visitNo}`}
+                className="text-xs text-slate-700"
+              >
+                <TableCell className="px-4 py-3 font-mono text-slate-500">
+                  {patient.id}
+                </TableCell>
+                <TableCell className="px-4 py-3 font-mono">
+                  {patient.visitNo}
+                </TableCell>
+                <TableCell className="px-4 py-3 font-medium">
+                  {patient.name}
+                </TableCell>
+                <TableCell className="px-4 py-3">{patient.gender}</TableCell>
+                <TableCell className="px-4 py-3">{patient.age}</TableCell>
+                <TableCell className="px-4 py-3 text-slate-500">
+                  {patient.lastVisitTime}
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  {patient.lastVisitDept}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="mt-auto shrink-0 border-t border-slate-200 bg-white p-3">
+        <div className="flex items-center justify-end text-[11px] text-slate-500">
+          <CompactPagination
+            page={safePage}
+            pageSize={pageSize}
+            total={patients.length}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -598,7 +618,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
       '治未病科',
       '肿瘤科',
     ];
-    return Array.from({length: Math.min(count, 20)}, (_, index) => ({
+    return Array.from({length: Math.min(count, 55)}, (_, index) => ({
       id: `P${String(10000 + index + Math.floor(Math.random() * 1000))}`,
       visitNo: `MZ${String(200000 + index + Math.floor(Math.random() * 10000))}`,
       name: names[Math.floor(Math.random() * names.length)],
@@ -913,7 +933,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                                   +{tag.referencedTags.length - 2}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent className="max-w-[200px] flex flex-wrap gap-1">
+                              <TooltipContent className="flex flex-wrap gap-1">
                                 {tag.referencedTags.map(ref => (
                                   <span key={ref} className="rounded bg-slate-100 px-1 text-[10px] text-slate-700">{ref}</span>
                                 ))}
@@ -1745,7 +1765,10 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
       </AlertDialog>
 
       <Sheet open={isPreviewSheetOpen} onOpenChange={setIsPreviewSheetOpen}>
-        <SheetContent className="w-[800px] gap-0 sm:max-w-[800px]">
+        <SheetContent 
+          className="w-[800px] gap-0 sm:max-w-[800px]" 
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <SheetHeader className="border-b border-slate-200">
             <SheetTitle>预览标签数据集</SheetTitle>
             <SheetDescription>
@@ -1753,8 +1776,8 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
               {previewSheetData?.total.toLocaleString()} 名患者
             </SheetDescription>
           </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-auto bg-slate-50 p-4">
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="flex min-h-0 flex-1 flex-col bg-slate-50 p-4">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white">
               {previewSheetData && (
                 <PatientTable patients={previewSheetData.patients} />
               )}

@@ -4,6 +4,7 @@ import {Download, Filter, Search, UserRound} from 'lucide-react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 
 import {DataTableShell} from '@/components/common/DataTableShell';
+import {CompactPagination} from '@/components/common/CompactPagination';
 import {PageHeader} from '@/components/common/PageHeader';
 import {StatusBadge} from '@/components/common/StatusBadge';
 import {Button} from '@/components/ui/button';
@@ -216,6 +217,17 @@ export function WarningManagementView() {
     return matchesFilter && matchesSearch;
   });
 
+  const ITEMS_PER_PAGE = 10;
+  const [tagsPage, setTagsPage] = useState(1);
+  const totalTagsPages = Math.ceil(filteredTags.length / ITEMS_PER_PAGE);
+  const safeTagsPage = Math.min(tagsPage, Math.max(totalTagsPages, 1));
+  const paginatedTags = filteredTags.slice((safeTagsPage - 1) * ITEMS_PER_PAGE, safeTagsPage * ITEMS_PER_PAGE);
+
+  const [recordsPage, setRecordsPage] = useState(1);
+  const totalRecordsPages = Math.ceil(filteredRecords.length / ITEMS_PER_PAGE);
+  const safeRecordsPage = Math.min(recordsPage, Math.max(totalRecordsPages, 1));
+  const paginatedRecords = filteredRecords.slice((safeRecordsPage - 1) * ITEMS_PER_PAGE, safeRecordsPage * ITEMS_PER_PAGE);
+
   const totalRecords = recordsData.length;
   const pendingRecords = recordsData.filter(
     (record) => record.handleStatus === '待处理',
@@ -357,7 +369,16 @@ export function WarningManagementView() {
                 </p>
               ) : null
             }
-            footer={<ReadOnlyPagination total={filteredTags.length} />}
+            footer={
+              <div className="flex items-center justify-end text-[11px] text-slate-500">
+                <CompactPagination 
+                  page={safeTagsPage} 
+                  pageSize={ITEMS_PER_PAGE} 
+                  total={filteredTags.length} 
+                  onPageChange={setTagsPage} 
+                />
+              </div>
+            }
           >
             <Table aria-label="预警标签列表">
               <TableHeader className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500 shadow-sm">
@@ -374,7 +395,7 @@ export function WarningManagementView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTags.map((tag) => (
+                {paginatedTags.map((tag) => (
                   <TableRow key={tag.id}>
                     <TableCell className="px-4 py-3">
                       <div className="font-medium text-slate-800">
@@ -456,7 +477,16 @@ export function WarningManagementView() {
             toolbar={recordsToolbar}
             className="flex h-full min-h-0 flex-col"
             contentClassName="flex min-h-0 flex-1 flex-col overflow-hidden [&_[data-slot=table-container]]:min-h-0 [&_[data-slot=table-container]]:flex-1 [&_[data-slot=table-container]]:overflow-auto"
-            footer={<ReadOnlyPagination total={filteredRecords.length} />}
+            footer={
+              <div className="flex items-center justify-end text-[11px] text-slate-500">
+                <CompactPagination 
+                  page={safeRecordsPage} 
+                  pageSize={ITEMS_PER_PAGE} 
+                  total={filteredRecords.length} 
+                  onPageChange={setRecordsPage} 
+                />
+              </div>
+            }
           >
             <div className="flex flex-wrap gap-2 border-b bg-slate-50 px-4 py-2">
               {(
@@ -511,7 +541,7 @@ export function WarningManagementView() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRecords.map((record) => (
+                  paginatedRecords.map((record) => (
                     <TableRow key={record.warningRecordId}>
                       <TableCell className="px-4 py-3">
                         <div className="font-medium text-slate-800">
