@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Sankey } from 'recharts';
 import { tcmConstitutions, ageDistribution, deptDistribution, genderDistribution, diseaseDistribution, constitutionTrendData, keyPopulationTrendData, transitionMatrixData, sankeyData, topImprovementPaths, topWorseningPaths } from '../data/mock';
 import { cn } from '../lib/utils';
@@ -131,7 +131,7 @@ const CustomSankeyLink = (props: any) => {
       `}
       stroke={color}
       strokeWidth={Math.max(linkWidth, 1)}
-      strokeOpacity={0.6}
+      strokeOpacity={0.25}
       fill="none"
       className="hover:stroke-opacity-100 transition-opacity duration-300"
     />
@@ -139,14 +139,15 @@ const CustomSankeyLink = (props: any) => {
 };
 
 const CustomSankeyNode = ({ x, y, width, height, index, payload }: any) => {
-  const isOut = x > 260;
+  // If it's the rightmost node, put text on the left. Otherwise put on the right.
+  const isRightmost = x > 200;
   return (
     <g>
       <rect x={x} y={y} width={width} height={height} fill="#0ea5e9" opacity="0.9" rx="2" />
       <text
-        x={isOut ? x - 6 : x + width + 6}
+        x={isRightmost ? x - 6 : x + width + 6}
         y={y + height / 2}
-        textAnchor={isOut ? 'end' : 'start'}
+        textAnchor={isRightmost ? 'end' : 'start'}
         dominantBaseline="middle"
         fontSize="10"
         fill="#475569"
@@ -158,16 +159,145 @@ const CustomSankeyNode = ({ x, y, width, height, index, payload }: any) => {
   );
 };
 
+const CustomPieLabel = (props: any) => {
+  const RADIAN = Math.PI / 180;
+  const { cx, cy, midAngle, outerRadius, payload, percent } = props;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  
+  // Start point of the line
+  const sx = cx + (outerRadius + 2) * cos;
+  const sy = cy + (outerRadius + 2) * sin;
+  // Middle point (bend)
+  const mx = cx + (outerRadius + 35) * cos;
+  const my = cy + (outerRadius + 35) * sin;
+  // End point
+  const ex = mx + (cos >= 0 ? 1 : -1) * 20;
+  const ey = my;
+  
+  const textAnchor = cos >= 0 ? 'start' : 'end';
+
+  return (
+    <g>
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="#94a3b8" fill="none" strokeWidth={1} />
+      <circle cx={ex} cy={ey} r={2} fill="#94a3b8" stroke="none" />
+      <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="#64748b" fontSize={10} dominantBaseline="central">
+        {`${payload.name} ${(percent * 100).toFixed(1)}%`}
+      </text>
+    </g>
+  );
+};
+
+const ConstitutionDropdown = ({ selectedConstitutions, toggleConstitution, tcmConstitutions }: any) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const isAllSelected = selectedConstitutions.length === tcmConstitutions.length;
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div 
+        className="flex h-8 items-center justify-between whitespace-nowrap rounded-md border border-slate-200 bg-white px-3 py-1 text-xs shadow-sm cursor-pointer min-w-[140px] text-slate-600 hover:bg-slate-50 transition-colors"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        {isAllSelected ? "全部体质" : `已选体质 (${selectedConstitutions.length})`}
+        <Filter size={12} className="ml-2 text-slate-400" />
+      </div>
+      {isDropdownOpen && (
+        <div className="absolute z-50 top-10 right-0 w-[180px] bg-white border border-slate-200 rounded-md shadow-lg p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto">
+          <label className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer text-xs text-slate-700 transition-colors">
+            <input type="checkbox" className="accent-blue-500 cursor-pointer" checked={isAllSelected} onChange={() => toggleConstitution('全部')} />
+            全部
+          </label>
+          {tcmConstitutions.map((c: any) => (
+            <label key={c.name} className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer text-xs text-slate-700 transition-colors">
+              <input type="checkbox" className="accent-blue-500 cursor-pointer" checked={selectedConstitutions.includes(c.name)} onChange={() => toggleConstitution(c.name)} />
+              {c.name}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function AnalysisView() {
   const [activeTab, setActiveTab] = useState<AnalysisTab>('constitution');
   const [trendMetric, setTrendMetric] = useState<TrendMetric>('依从性');
   const [deptPage, setDeptPage] = useState(1);
   const [diseasePage, setDiseasePage] = useState(1);
   const [hiddenLines, setHiddenLines] = useState<Record<string, boolean>>({});
+  const [selectedConstitutions, setSelectedConstitutions] = useState<string[]>(tcmConstitutions.map(c => c.name));
 
   const ITEMS_PER_PAGE = 10;
-  const paginatedDept = deptDistribution.slice((deptPage - 1) * ITEMS_PER_PAGE, deptPage * ITEMS_PER_PAGE);
-  const paginatedDisease = diseaseDistribution.slice((diseasePage - 1) * ITEMS_PER_PAGE, diseasePage * ITEMS_PER_PAGE);
+  
+  const toggleConstitution = (name: string) => {
+    if (name === '全部') {
+      if (selectedConstitutions.length === tcmConstitutions.length) {
+        setSelectedConstitutions([]);
+      } else {
+        setSelectedConstitutions(tcmConstitutions.map(c => c.name));
+      }
+      return;
+    }
+    setSelectedConstitutions(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(c => c !== name);
+      } else {
+        return [...prev, name];
+      }
+    });
+  };
+
+  const scaleFactor = selectedConstitutions.length / 9;
+
+  const filteredDeptDistribution = useMemo(() => {
+    return deptDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
+  }, [scaleFactor]);
+
+  const filteredDiseaseDistribution = useMemo(() => {
+    return diseaseDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
+  }, [scaleFactor]);
+
+  const pieDeptDistribution = useMemo(() => {
+    if (filteredDeptDistribution.length <= 10) return filteredDeptDistribution;
+    const top10 = filteredDeptDistribution.slice(0, 10);
+    const otherCount = filteredDeptDistribution.slice(10).reduce((acc, curr) => acc + curr.count, 0);
+    return [...top10, { name: "其他", count: otherCount }];
+  }, [filteredDeptDistribution]);
+
+  const pieDiseaseDistribution = useMemo(() => {
+    if (filteredDiseaseDistribution.length <= 10) return filteredDiseaseDistribution;
+    const top10 = filteredDiseaseDistribution.slice(0, 10);
+    const otherCount = filteredDiseaseDistribution.slice(10).reduce((acc, curr) => acc + curr.count, 0);
+    return [...top10, { name: "其他", count: otherCount }];
+  }, [filteredDiseaseDistribution]);
+
+  const filteredAgeDistribution = useMemo(() => {
+    return ageDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
+  }, [scaleFactor]);
+
+  const filteredGenderDistribution = useMemo(() => {
+    return genderDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
+  }, [scaleFactor]);
+
+  const filteredTcmConstitutions = useMemo(() => {
+    return tcmConstitutions.filter(c => selectedConstitutions.includes(c.name));
+  }, [selectedConstitutions]);
+
+  const paginatedDept = filteredDeptDistribution.slice((deptPage - 1) * ITEMS_PER_PAGE, deptPage * ITEMS_PER_PAGE);
+  const paginatedDisease = filteredDiseaseDistribution.slice((diseasePage - 1) * ITEMS_PER_PAGE, diseasePage * ITEMS_PER_PAGE);
   const trendDataKey = trendMetric === '改善率' ? '指标改善' : trendMetric;
 
   const toggleLine = (dataKey: string) => {
@@ -446,7 +576,7 @@ export function AnalysisView() {
           <h2 className="text-base font-bold text-slate-800 tracking-tight shrink-0 mt-2">核心数据概览</h2>
 
           {/* Core Overview Indicators */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 shrink-0">
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 flex items-center gap-3">
               <div className="bg-blue-50 p-2 rounded-md">
                 <Users className="text-blue-500" size={18} />
@@ -455,7 +585,6 @@ export function AnalysisView() {
                 <p className="text-xs text-slate-500 font-medium">在管人群总数</p>
                 <div className="flex items-baseline gap-1">
                   <h3 className="text-lg font-bold text-slate-800">50,000</h3>
-                  <span className="text-[10px] text-slate-400">人</span>
                 </div>
               </div>
             </div>
@@ -467,7 +596,6 @@ export function AnalysisView() {
                 <p className="text-xs text-slate-500 font-medium">已建画像人数</p>
                 <div className="flex items-baseline gap-1">
                   <h3 className="text-lg font-bold text-slate-800">50,000</h3>
-                  <span className="text-[10px] text-slate-400">人</span>
                 </div>
               </div>
             </div>
@@ -479,7 +607,6 @@ export function AnalysisView() {
                 <p className="text-xs text-slate-500 font-medium">偏颇体质人数</p>
                 <div className="flex items-baseline gap-1">
                   <h3 className="text-lg font-bold text-slate-800">37,500</h3>
-                  <span className="text-[10px] text-slate-400">人</span>
                 </div>
               </div>
             </div>
@@ -491,26 +618,46 @@ export function AnalysisView() {
                 <p className="text-xs text-slate-500 font-medium">异常预警人数</p>
                 <div className="flex items-baseline gap-1">
                   <h3 className="text-lg font-bold text-slate-800">5,200</h3>
-                  <span className="text-[10px] text-slate-400">人</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 flex items-center gap-3">
+              <div className="bg-indigo-50 p-2 rounded-md">
+                <Activity className="text-indigo-500" size={18} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 font-medium">体质评估人次</p>
+                <div className="flex items-baseline gap-1">
+                  <h3 className="text-lg font-bold text-slate-800">125,430</h3>
                 </div>
               </div>
             </div>
           </div>
 
           {/* 9 Constitutions Overview */}
-          <div className="grid grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-2 shrink-0">
-            {tcmConstitutions.map((c, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 flex flex-col justify-center items-center text-center hover:border-slate-300 transition-colors">
-                <p className="text-[11px] font-bold text-slate-700">{c.name}</p>
-                <p className="text-sm font-black text-slate-800 mt-1">{c.count.toLocaleString()}</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">占比 {c.percentage}%</p>
-              </div>
-            ))}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 mt-4">
+            <h3 className="text-sm font-bold text-slate-800 mb-3">九种体质类型人数及占比</h3>
+            <div className="grid grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-2">
+              {tcmConstitutions.map((c, i) => (
+                <div key={i} className="bg-slate-50 rounded-lg border border-slate-100 p-3 flex flex-col justify-center items-center text-center hover:border-slate-300 hover:bg-slate-100 transition-colors">
+                  <p className="text-[11px] font-bold text-slate-700">{c.name}</p>
+                  <p className="text-sm font-black text-slate-800 mt-1">{c.count.toLocaleString()}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">占比 {c.percentage}%</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h2 className="text-base font-bold text-slate-800 tracking-tight shrink-0 mt-6 border-t border-slate-200 pt-6">中医体质分布情况</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 border-t border-slate-200 pt-6">
+            <h2 className="text-base font-bold text-slate-800 tracking-tight shrink-0 mb-3 sm:mb-0">中医体质分布分析</h2>
+            <ConstitutionDropdown 
+              selectedConstitutions={selectedConstitutions} 
+              toggleConstitution={toggleConstitution} 
+              tcmConstitutions={tcmConstitutions} 
+            />
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 shrink-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 shrink-0 mt-4">
             {/* Chart 1: Constitution Pie */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 col-span-1 flex flex-col h-[300px]">
               <h2 className="text-xs font-bold text-slate-700 mb-2">体质类型人数及占比</h2>
@@ -518,7 +665,7 @@ export function AnalysisView() {
                 <ResponsiveContainer width="100%" height="100%" initialDimension={chartInitialDimension}>
                   <PieChart>
                     <Pie
-                      data={tcmConstitutions}
+                      data={filteredTcmConstitutions}
                       cx="50%"
                       cy="50%"
                       innerRadius={45}
@@ -533,7 +680,7 @@ export function AnalysisView() {
                         </text>
                       )}
                     >
-                      {tcmConstitutions.map((entry, index) => (
+                      {filteredTcmConstitutions.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -552,7 +699,7 @@ export function AnalysisView() {
               <div className="min-h-0 min-w-0 flex-1">
                 <ResponsiveContainer width="100%" height="100%" initialDimension={chartInitialDimension}>
                   <BarChart
-                    data={ageDistribution}
+                    data={filteredAgeDistribution}
                     margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -575,7 +722,7 @@ export function AnalysisView() {
                 <ResponsiveContainer width="100%" height="100%" initialDimension={chartInitialDimension}>
                   <PieChart>
                     <Pie
-                      data={genderDistribution}
+                      data={filteredGenderDistribution}
                       cx="50%"
                       cy="50%"
                       innerRadius={0}
@@ -603,71 +750,118 @@ export function AnalysisView() {
             </div>
           </div>
 
-          {/* Rankings Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
-            {/* Table 1: Dept Ranking */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col h-[300px]">
-              <h2 className="text-xs font-bold text-slate-700 mb-2">科室人群分布排行</h2>
-              <div className="flex-1 overflow-y-auto">
-                <Table aria-label="科室分布排名">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="h-8 text-[10px] text-slate-400">排名</TableHead>
-                      <TableHead className="h-8 text-[10px] text-slate-400">科室名称</TableHead>
-                      <TableHead className="h-8 text-right text-[10px] text-slate-400">人数</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedDept.map((item, idx) => (
-                      <TableRow key={item.name}>
-                        <TableCell className="py-2 text-[10px] text-slate-400">{(deptPage - 1) * ITEMS_PER_PAGE + idx + 1}</TableCell>
-                        <TableCell className="py-2 text-xs text-slate-600">{item.name}</TableCell>
-                        <TableCell className="py-2 text-right text-xs font-medium text-slate-700">{item.count.toLocaleString()}</TableCell>
+          <div className="flex flex-col gap-4 shrink-0 mt-4">
+            {/* Chart 4: Dept Ranking */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col min-h-[300px]">
+              <h2 className="text-xs font-bold text-slate-700 mb-4">科室人数分布Top10</h2>
+              <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-[250px]">
+                <div className="flex-1 lg:flex-[1.2] min-h-[200px] min-w-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieDeptDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={80}
+                        dataKey="count"
+                        stroke="none"
+                        labelLine={false}
+                        label={<CustomPieLabel />}
+                      >
+                        {pieDeptDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => value.toLocaleString() + ' 人'}
+                        contentStyle={{ borderRadius: '4px', border: '1px solid #e2e8f0', fontSize: '12px', padding: '4px 8px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <Table aria-label="科室分布排名">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="h-8 text-[11px] text-slate-500">排名</TableHead>
+                        <TableHead className="h-8 text-[11px] text-slate-500">科室名称</TableHead>
+                        <TableHead className="h-8 text-right text-[11px] text-slate-500">人数</TableHead>
+                        <TableHead className="h-8 text-right text-[11px] text-slate-500">占比</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="mt-auto border-t border-slate-100 pt-2">
-                <CompactPagination
-                  page={deptPage}
-                  pageSize={ITEMS_PER_PAGE}
-                  total={deptDistribution.length}
-                  onPageChange={setDeptPage}
-                />
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDeptDistribution.slice(0, 10).map((item, idx) => {
+                        const total = filteredDeptDistribution.reduce((acc, curr) => acc + curr.count, 0);
+                        const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) + '%' : '0%';
+                        return (
+                        <TableRow key={item.name}>
+                          <TableCell className="py-2 text-[11px] text-slate-400">{idx + 1}</TableCell>
+                          <TableCell className="py-2 text-[11px] text-slate-600">{item.name}</TableCell>
+                          <TableCell className="py-2 text-right text-[11px] font-medium text-slate-700">{item.count.toLocaleString()}</TableCell>
+                          <TableCell className="py-2 text-right text-[11px] text-slate-500">{percentage}</TableCell>
+                        </TableRow>
+                      )})}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
 
-            {/* Table 2: Disease Ranking */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col h-[300px]">
-              <h2 className="text-xs font-bold text-slate-700 mb-2">病种人群分布排行</h2>
-              <div className="flex-1 overflow-y-auto">
-                <Table aria-label="病种分布排名">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="h-8 text-[10px] text-slate-400">排名</TableHead>
-                      <TableHead className="h-8 text-[10px] text-slate-400">病种名称</TableHead>
-                      <TableHead className="h-8 text-right text-[10px] text-slate-400">人数</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedDisease.map((item, idx) => (
-                      <TableRow key={item.name}>
-                        <TableCell className="py-2 text-[10px] text-slate-400">{(diseasePage - 1) * ITEMS_PER_PAGE + idx + 1}</TableCell>
-                        <TableCell className="py-2 text-xs text-slate-600">{item.name}</TableCell>
-                        <TableCell className="py-2 text-right text-xs font-medium text-slate-700">{item.count.toLocaleString()}</TableCell>
+            {/* Chart 5: Disease Ranking */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col min-h-[300px]">
+              <h2 className="text-xs font-bold text-slate-700 mb-4">病种人数分布Top10</h2>
+              <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-[250px]">
+                <div className="flex-1 lg:flex-[1.2] min-h-[200px] min-w-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieDiseaseDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={80}
+                        dataKey="count"
+                        stroke="none"
+                        labelLine={false}
+                        label={<CustomPieLabel />}
+                      >
+                        {pieDiseaseDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => value.toLocaleString() + ' 人'}
+                        contentStyle={{ borderRadius: '4px', border: '1px solid #e2e8f0', fontSize: '12px', padding: '4px 8px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <Table aria-label="病种分布排名">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="h-8 text-[11px] text-slate-500">排名</TableHead>
+                        <TableHead className="h-8 text-[11px] text-slate-500">病种名称</TableHead>
+                        <TableHead className="h-8 text-right text-[11px] text-slate-500">人数</TableHead>
+                        <TableHead className="h-8 text-right text-[11px] text-slate-500">占比</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="mt-auto border-t border-slate-100 pt-2">
-                <CompactPagination
-                  page={diseasePage}
-                  pageSize={ITEMS_PER_PAGE}
-                  total={diseaseDistribution.length}
-                  onPageChange={setDiseasePage}
-                />
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDiseaseDistribution.slice(0, 10).map((item, idx) => {
+                        const total = filteredDiseaseDistribution.reduce((acc, curr) => acc + curr.count, 0);
+                        const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) + '%' : '0%';
+                        return (
+                        <TableRow key={item.name}>
+                          <TableCell className="py-2 text-[11px] text-slate-400">{idx + 1}</TableCell>
+                          <TableCell className="py-2 text-[11px] text-slate-600">{item.name}</TableCell>
+                          <TableCell className="py-2 text-right text-[11px] font-medium text-slate-700">{item.count.toLocaleString()}</TableCell>
+                          <TableCell className="py-2 text-right text-[11px] text-slate-500">{percentage}</TableCell>
+                        </TableRow>
+                      )})}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           </div>
@@ -683,7 +877,7 @@ export function AnalysisView() {
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col h-[350px]">
               <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-xs font-bold text-slate-700">体质偏颇人群整体趋势</h2>
+                  <h2 className="text-xs font-bold text-slate-700">患者群体体质情况分析</h2>
                 </div>
               </div>
               <div className="min-h-0 min-w-0 flex-1">
@@ -726,43 +920,46 @@ export function AnalysisView() {
             {/* --- NEW SECTION: Path Evolution & Transition --- */}
             <div className="flex flex-col gap-4 mt-6 border-t border-slate-200 pt-6">
               {/* Core Indicators */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-                 <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium whitespace-nowrap">体质改善率</p>
-                      <h3 className="text-xl font-bold text-slate-800 mt-1">18.6%</h3>
-                    </div>
-                    <div className="bg-emerald-50 text-emerald-500 p-2 rounded-full"><TrendingUp size={16} /></div>
-                 </div>
-                 <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium whitespace-nowrap">体质稳定率</p>
-                      <h3 className="text-xl font-bold text-slate-800 mt-1">62.4%</h3>
-                    </div>
-                    <div className="bg-blue-50 text-blue-500 p-2 rounded-full"><Activity size={16} /></div>
-                 </div>
-                 <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium whitespace-nowrap">偏颇加重率</p>
-                      <h3 className="text-xl font-bold text-slate-800 mt-1">12.8%</h3>
-                    </div>
-                    <div className="bg-rose-50 text-rose-500 p-2 rounded-full"><TrendingUp size={16} className="rotate-180" /></div>
-                 </div>
-                 <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium whitespace-nowrap">平和质保持率</p>
-                      <h3 className="text-xl font-bold text-slate-800 mt-1">72.0%</h3>
-                    </div>
-                    <div className="bg-emerald-50 text-emerald-600 p-2 rounded-full"><ShieldCheck size={16} /></div>
-                 </div>
+              <div className="flex flex-col gap-3 shrink-0">
+                <h3 className="text-sm font-bold text-slate-800">患者群体体质变化趋势</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                   <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">体质改善率</p>
+                        <h3 className="text-xl font-bold text-slate-800 mt-1">18.6%</h3>
+                      </div>
+                      <div className="bg-emerald-50 text-emerald-500 p-2 rounded-full"><TrendingUp size={16} /></div>
+                   </div>
+                   <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">体质稳定率</p>
+                        <h3 className="text-xl font-bold text-slate-800 mt-1">62.4%</h3>
+                      </div>
+                      <div className="bg-blue-50 text-blue-500 p-2 rounded-full"><Activity size={16} /></div>
+                   </div>
+                   <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">偏颇加重率</p>
+                        <h3 className="text-xl font-bold text-slate-800 mt-1">12.8%</h3>
+                      </div>
+                      <div className="bg-rose-50 text-rose-500 p-2 rounded-full"><TrendingUp size={16} className="rotate-180" /></div>
+                   </div>
+                   <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">平和质保持率</p>
+                        <h3 className="text-xl font-bold text-slate-800 mt-1">72.0%</h3>
+                      </div>
+                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-full"><ShieldCheck size={16} /></div>
+                   </div>
+                </div>
               </div>
 
               {/* Grid 1: Matrix and Sankey */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col min-h-[440px]">
                     <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <h2 className="text-xs font-bold text-slate-700 whitespace-nowrap">体质转归矩阵</h2>
+                        <h2 className="text-xs font-bold text-slate-700 whitespace-nowrap">体质转归趋势分析</h2>
                         <p className="text-[10px] text-slate-500 mt-1 max-w-xl text-wrap">展示患者体质在相邻评估周期内的变化方向，识别改善、稳定及加重趋势；绿色表示改善，红色表示加重。</p>
                       </div>
                     </div>
@@ -807,7 +1004,7 @@ export function AnalysisView() {
                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex flex-col min-h-[440px]">
                     <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <h2 className="text-xs font-bold text-slate-700 whitespace-nowrap">中医体质演变路径图</h2>
+                        <h2 className="text-xs font-bold text-slate-700 whitespace-nowrap">中医体质演变趋势图</h2>
                         <p className="text-[10px] text-slate-500 mt-1 max-w-xl text-wrap">展示不同体质人群在多个连续评估周期内的流转路径，流线宽度代表流转规模。</p>
                       </div>
                     </div>
@@ -816,7 +1013,7 @@ export function AnalysisView() {
                         <Sankey 
                           data={sankeyData} 
                           nodePadding={40} 
-                          margin={{ top: 20, right: 60, left: 60, bottom: 20 }} 
+                          margin={{ top: 20, right: 10, left: 10, bottom: 20 }} 
                           link={<CustomSankeyLink />}
                           node={<CustomSankeyNode />} 
                         >

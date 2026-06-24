@@ -86,7 +86,7 @@ import {cn} from '@/lib/utils';
 
 type ViewMode = 'list' | 'editor';
 type EditorTab = 'basic' | 'rules' | 'warning';
-type TagStatus = '已发布' | '草稿' | '已停用';
+type TagStatus = '已启用' | '草稿' | '已停用';
 type MainTab = 'basic' | 'feature';
 
 interface RuleCondition {
@@ -121,6 +121,7 @@ interface EditableTag {
   warningType?: string;
   disposalAdvice?: string;
   editorConfig?: EditorConfig;
+  referencedTagsLogic?: string;
   referencedTags?: string[];
 }
 
@@ -179,10 +180,19 @@ function validateTag(tag: EditableTag): TagFormErrors {
 }
 
 function toEditableTag(tag: any): EditableTag {
+  let cycle = tag.cycle || '每日';
+  if (cycle.includes('每日')) cycle = '每日';
+  else if (cycle.includes('每周')) cycle = '每周';
+  else if (cycle.includes('每月')) cycle = '每月';
+  else if (cycle.includes('实时')) cycle = '实时';
+  else if (cycle.includes('手动')) cycle = '手动';
+
   return {
     ...tag,
+    cycle,
     status: tag.status as TagStatus,
     editorConfig: tag.editorConfig as EditorConfig | undefined,
+    referencedTagsLogic: tag.referencedTagsLogic || 'hit_any',
     referencedTags: tag.referencedTags || undefined,
   };
 }
@@ -261,7 +271,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
   const [mainTabState, setMainTabState] = useState<MainTab>('basic');
   const mainTab = theme === 'admin' ? 'basic' : mainTabState;
   const setMainTab = setMainTabState;
-  const [activeCategory, setActiveCategory] = useState(mainTab === 'feature' ? '全部特色标签' : '全部');
+  const [activeCategory, setActiveCategory] = useState(mainTab === 'feature' ? '全部专科特色标签' : '全部');
   const [editingTag, setEditingTag] = useState<EditableTag | null>(
     createMode ? createEmptyTag() : null,
   );
@@ -329,7 +339,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
 
   const renderRefTagDropdown = () => {
     if (!isRefTagDropdownOpen) return null;
-    const allBasicTags = basicTags.filter(t => t.status === '已发布');
+    const allBasicTags = basicTags.filter(t => t.status === '已启用');
     const filteredBasicTags = allBasicTags.filter(tag => 
       !refTagSearchKw || tag.name.includes(refTagSearchKw) || tag.category.includes(refTagSearchKw) || (tag.code && tag.code.includes(refTagSearchKw))
     );
@@ -351,7 +361,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
         <div className="max-h-60 overflow-y-auto">
           {filteredBasicTags.length === 0 ? (
             <div className="p-4 text-center text-[10px] text-slate-400">
-              无匹配的已发布基础标签
+              无匹配的已启用基础标签
             </div>
           ) : (
             filteredBasicTags.map((tag) => {
@@ -405,7 +415,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
     setFormErrors({});
     if (clearFilters) {
       setTagSearchKw('');
-      setActiveCategory(mainTab === 'feature' ? '全部特色标签' : '全部');
+      setActiveCategory(mainTab === 'feature' ? '全部专科特色标签' : '全部');
       setCurrentPage(1);
       updateSearchParams({mode: undefined, q: undefined});
       return;
@@ -430,7 +440,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
 
   useEffect(() => {
     setTagSearchKw(queryValue);
-    setActiveCategory(mainTab === 'feature' ? '全部特色标签' : '全部');
+    setActiveCategory(mainTab === 'feature' ? '全部专科特色标签' : '全部');
     setCurrentPage(1);
   }, [queryValue]);
 
@@ -469,7 +479,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
     }
   };
 
-  const handleSave = (status: Extract<TagStatus, '已发布' | '草稿'>) => {
+  const handleSave = (status: Extract<TagStatus, '已启用' | '草稿'>) => {
     const currentTag = editingTag ?? createEmptyTag();
     const errors = validateTag(currentTag);
     setFormErrors(errors);
@@ -500,7 +510,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
         ? current.map((tag) => (tag.id === currentTag.id ? savedTag : tag))
         : [savedTag, ...current],
     );
-    toast.success(status === '已发布' ? '标签已发布' : '草稿已保存');
+    toast.success(status === '已启用' ? '标签已启用' : '草稿已保存');
     returnToList(!currentTag.id);
   };
 
@@ -558,13 +568,13 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
 
   const handleConfirmStatus = () => {
     if (!statusTag?.id) return;
-    const nextStatus = statusTag.status === '已发布' ? '已停用' : '已发布';
+    const nextStatus = statusTag.status === '已启用' ? '已停用' : '已启用';
     setTags((current) =>
       current.map((tag) =>
         tag.id === statusTag.id ? {...tag, status: nextStatus} : tag,
       ),
     );
-    toast.success(nextStatus === '已停用' ? '标签已停用' : '标签已发布');
+    toast.success(nextStatus === '已停用' ? '标签已停用' : '标签已启用');
     setStatusTag(null);
   };
 
@@ -651,12 +661,12 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
   };
 
   const filteredTags = tags.filter((tag) => {
-    // 平台端（非后台）的基础标签只展示已发布
-    if (theme === 'default' && mainTab === 'basic' && tag.status !== '已发布') {
+    // 平台端（非后台）的基础标签只展示已启用
+    if (theme === 'default' && mainTab === 'basic' && tag.status !== '已启用') {
       return false;
     }
     const matchesCategory =
-      activeCategory === '全部' || activeCategory === '全部特色标签' || tag.category === activeCategory;
+      activeCategory === '全部' || activeCategory === '全部专科特色标签' || tag.category === activeCategory;
     const keyword = tagSearchKw.trim().toLowerCase();
     const matchesSearch =
       !keyword ||
@@ -681,17 +691,17 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
         value={mainTab}
         onValueChange={(v) => {
           setMainTab(v as any);
-          setActiveCategory(v === 'feature' ? '全部特色标签' : '全部');
+          setActiveCategory(v === 'feature' ? '全部专科特色标签' : '全部');
           setCurrentPage(1);
         }}
         className="min-h-0 flex-1 flex flex-col"
       >
         <TabsList className={cn("shrink-0 mb-4 w-fit", theme === 'admin' && "hidden")} aria-label="标签管理视图">
           <TabsTrigger value="basic">
-            基础标签
+            基础体质标签
           </TabsTrigger>
           <TabsTrigger value="feature">
-            特色标签
+            专科特色标签
           </TabsTrigger>
         </TabsList>
         <div className="flex flex-1 gap-3 min-h-0">
@@ -759,13 +769,13 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                   }}
                 >
                   <span className="truncate">{category.name}</span>
-                  {(category.name === '全部' || category.name === '全部特色标签') && (
+                  {(category.name === '全部' || category.name === '全部专科特色标签') && (
                     <span className="ml-auto text-[10px] text-slate-400">
                       {tags.length}
                     </span>
                   )}
                 </Button>
-                {(category.name !== '全部' && category.name !== '全部特色标签') && canEditCurrentTab && (
+                {(category.name !== '全部' && category.name !== '全部专科特色标签') && canEditCurrentTab && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -792,7 +802,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
       </aside>
 
       <DataTableShell
-        title={mainTab === 'feature' ? '特色标签清单' : '标签清单'}
+        title={mainTab === 'feature' ? '专科特色标签清单' : '标签清单'}
         description={mainTab === 'feature' ? `面向业务场景组合而成的复合标签，共 ${filteredTags.length} 个` : `共 ${filteredTags.length} 个标签`}
         className="flex min-w-0 flex-1 flex-col shadow-sm"
         contentClassName="min-h-0 flex-1 overflow-hidden"
@@ -822,7 +832,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                 onChange={(event) => {
                   const value = event.target.value;
                   setTagSearchKw(value);
-                  setActiveCategory(mainTab === 'feature' ? '全部特色标签' : '全部');
+                  setActiveCategory(mainTab === 'feature' ? '全部专科特色标签' : '全部');
                   setCurrentPage(1);
                   updateSearchParams({q: value || undefined});
                 }}
@@ -1002,7 +1012,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                         <>
                           <Button
                             className={
-                              tag.status === '已发布'
+                              tag.status === '已启用'
                                 ? 'text-amber-600'
                                 : 'text-emerald-600'
                             }
@@ -1010,9 +1020,9 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                             variant="ghost"
                             onClick={() => setStatusTag(tag)}
                           >
-                            {tag.status === '已发布' ? '停用' : '发布'}
+                            {tag.status === '已启用' ? '停用' : '启用'}
                           </Button>
-                          {tag.status !== '已发布' && (
+                          {tag.status !== '已启用' && (
                             <Button
                               className="text-red-500"
                               size="xs"
@@ -1142,16 +1152,20 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
           }
         />
       </div>
+    </div>
+  );
 
-      <div className="grid grid-cols-2 gap-6 border-t border-slate-100 pt-4">
+  const renderRulesEditor = () => (
+    <div className="flex w-full flex-col gap-6">
+      <div className="grid grid-cols-2 gap-6 pb-2">
         <div className="space-y-2">
-          <Label className="text-xs font-semibold">扫描周期 / 更新机制</Label>
+          <Label className="text-xs font-semibold">自动识别扫描周期</Label>
           <Select
-            value={editingTag?.cycle || '每日'}
+            value={editingTag?.cycle || ''}
             onValueChange={(value) => handleTagField('cycle', value)}
           >
-            <SelectTrigger aria-label="扫描周期" className="w-full">
-              <SelectValue />
+            <SelectTrigger aria-label="自动识别扫描周期" className="w-full">
+              <SelectValue placeholder="请选择周期" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="每日">每日自动更新 (T+1)</SelectItem>
@@ -1163,15 +1177,27 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
           </Select>
         </div>
       </div>
-    </div>
-  );
-
-  const renderRulesEditor = () => (
-    <div className="flex w-full flex-col gap-6">
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 border-t border-slate-100 pt-4">
         {mainTab === 'feature' && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-            <Label className="mb-2 block text-xs font-semibold text-slate-800">引用基础标签</Label>
+            <div className="mb-2 flex items-center justify-between">
+              <Label className="block text-xs font-semibold text-slate-800">引用基础标签</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">逻辑关系</span>
+                <Select
+                  value={editingTag?.referencedTagsLogic || 'hit_any'}
+                  onValueChange={(value) => handleTagField('referencedTagsLogic', value)}
+                >
+                  <SelectTrigger className="h-7 w-[100px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hit_any" className="text-xs">满足任一</SelectItem>
+                    <SelectItem value="hit_all" className="text-xs">满足全部</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="relative" ref={refTagContainerRef}>
               <div className="min-h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm flex flex-wrap gap-1.5 focus-within:ring-1 focus-within:ring-slate-400">
                   {editingTag?.referencedTags?.map(tag => (
@@ -1213,7 +1239,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
         )}
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-800">
-            构建业务规则逻辑树
+            构建自动打标逻辑规则
           </h3>
           <Button
             className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
@@ -1595,10 +1621,10 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
           <Button
             className="bg-cyan-600 hover:bg-cyan-700"
             size="sm"
-            onClick={() => handleSave('已发布')}
+            onClick={() => handleSave('已启用')}
           >
             <Check />
-            保存并发布
+            保存并启用
           </Button>
         </div>
       </div>
@@ -1616,7 +1642,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
             基础信息
           </TabsTrigger>
           <TabsTrigger className="flex-none px-3 text-xs" value="rules">
-            规则配置区
+            画像标签逻辑配置
           </TabsTrigger>
           <TabsTrigger className="flex-none px-3 text-xs" value="warning">
             预警逻辑
@@ -1747,18 +1773,18 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {statusTag?.status === '已发布' ? '停用标签' : '发布标签'}
+              {statusTag?.status === '已启用' ? '停用标签' : '启用标签'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {statusTag?.status === '已发布'
+              {statusTag?.status === '已启用'
                 ? `停用后标签“${statusTag?.name}”将不再参与自动扫描。`
-                : `确认发布标签“${statusTag?.name}”？`}
+                : `确认启用标签“${statusTag?.name}”？`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmStatus}>
-              {statusTag?.status === '已发布' ? '确认停用' : '确认发布'}
+              {statusTag?.status === '已启用' ? '确认停用' : '确认启用'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

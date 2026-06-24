@@ -1,6 +1,6 @@
 export const ruleDomains = [
-  "基础标签", "患者基本信息", "就诊记录", "诊断", "医嘱/处方", "手术", "检验检查", 
-  "病历文书", "中医四诊摘要", "随访记录", "产后随访记录", "卒中随访记录", "中医体质辨识记录", "脏腑功能评估", "健康监测指标", 
+  "基础标签", "患者基本信息", "中医体质辨识记录", "检验检查", "健康监测指标", "就诊记录", "诊断", "医嘱/处方", "手术", 
+  "病历文书", "中医四诊摘要", "随访记录", "产后随访记录", "卒中随访记录", "脏腑功能评估", 
   "慢病管理记录", "中医药事记录", "养生干预记录", "宣教与依从性反馈", "妇产专科记录", "门诊记录", "门急诊记录", "健康宣教记录", "药师干预记录"
 ];
 
@@ -31,6 +31,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "是否复诊", code: "is_revisit", type: "boolean" },
   ],
   "门诊记录": [
+    { name: "距上次复诊天数", code: "days_since_last_revisit", type: "number" },
     { name: "最近复诊时间", code: "latest_revisit_time", type: "date" },
     { name: "复诊状态", code: "revisit_status", type: "enum" },
     { name: "复诊科室", code: "revisit_dept", type: "text" },
@@ -52,6 +53,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "产后康复评估状态", code: "postpartum_rehab_assessment_status", type: "enum" },
   ],
   "诊断": [
+    { name: "呼吸专病类型", code: "resp_specialty_disease_type", type: "multi" },
     { name: "诊断名称", code: "diagnosis_name", type: "text" },
     { name: "诊断编码", code: "diagnosis_code", type: "text" },
     { name: "诊断类型", code: "diagnosis_type", type: "enum" },
@@ -101,6 +103,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "四诊记录时间", code: "four_diagnosis_time", type: "date" },
   ],
   "随访记录": [
+    { name: "距上次随访天数", code: "days_since_last_followup", type: "number" },
     { name: "随访时间", code: "followup_time", type: "date" },
     { name: "最近随访时间", code: "latest_followup_time", type: "date" },
     { name: "产后康复随访状态", code: "postpartum_followup_status", type: "enum" },
@@ -118,6 +121,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "最近干预状态", code: "latest_intervention_status", type: "enum" },
   ],
   "产后随访记录": [
+    { name: "康复评估完成状态", code: "rehab_assessment_complete_status", type: "enum" },
     { name: "最近一次随访结论", code: "latest_followup_result", type: "enum" },
     { name: "产后康复随访状态", code: "postpartum_followup_status", type: "enum" },
     { name: "最近产后随访时间", code: "latest_postpartum_followup_time", type: "date" },
@@ -168,6 +172,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "设备回传时间", code: "device_upload_time", type: "date" },
   ],
   "慢病管理记录": [
+    { name: "卒中危险因素", code: "stroke_risk_factor", type: "multi" },
     { name: "慢病类型", code: "chronic_disease_type", type: "enum" },
     { name: "糖代谢管理状态", code: "glucose_management_status", type: "enum" },
     { name: "专病管理状态", code: "specialty_management_status", type: "enum" },
@@ -179,6 +184,8 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "最近管理时间", code: "latest_manage_time", type: "date" },
   ],
   "中医药事记录": [
+    { name: "近60天中药处方数", code: "tcm_prescription_count_60d", type: "number" },
+    { name: "中药用药执行状态", code: "tcm_medication_execute_status", type: "enum" },
     { name: "中药处方名称", code: "tcm_prescription_name", type: "text" },
     { name: "关联处方ID", code: "prescription_id", type: "text" },
     { name: "中药饮片名称", code: "herb_name", type: "text" },
@@ -189,6 +196,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "处方时间", code: "prescription_time", type: "date" },
   ],
   "药师干预记录": [
+    { name: "药师干预状态", code: "pharmacist_intervention_status", type: "enum" },
     { name: "最近干预状态", code: "latest_pharmacist_intervention_status", type: "enum" },
     { name: "最近干预时间", code: "latest_pharmacist_intervention_time", type: "date" },
     { name: "干预类型", code: "pharmacist_intervention_type", type: "enum" },
@@ -204,6 +212,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "干预时间", code: "intervention_time", type: "date" },
   ],
   "健康宣教记录": [
+    { name: "中医呼吸调养宣教完成状态", code: "resp_education_complete_status", type: "enum" },
     { name: "中医呼吸调养宣教状态", code: "resp_education_status", type: "enum" },
     { name: "宣教主题", code: "education_topic", type: "text" },
     { name: "宣教触达状态", code: "education_reach_status", type: "enum" },

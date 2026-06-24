@@ -25,58 +25,24 @@ import {
 } from '@/components/ui/sidebar';
 
 const menuItems = [
-  {path: '/workbench', label: '工作台', icon: LayoutDashboard},
-  {path: '/tags', label: '标签中心', icon: Tags},
-  {path: '/population', label: '人群运营', icon: Users},
-  {path: '/warning', label: '预警管理', icon: AlertTriangle},
-  {path: '/touchpoint', label: '触达运营', icon: Send},
-  {path: '/dataservice', label: '数据服务', icon: Database},
-  {path: '/analysis', label: '主题分析', icon: BarChart2},
+  {path: '/workbench', label: '画像工作台', icon: LayoutDashboard},
+  {path: '/tags', label: '画像标签管理', icon: Tags},
+  {path: '/population', label: '体质人群管理', icon: Users},
+  {path: '/warning', label: '画像预警提醒', icon: AlertTriangle},
+  {path: '/touchpoint', label: '患者运营管理', icon: Send},
+  {path: '/dataservice', label: '画像开放服务', icon: Database},
+  {path: '/analysis', label: '体质主题分析', icon: BarChart2},
 ];
-
-const brandLogoColor = '#0080A2';
 
 function TcmPortraitLogo() {
   return (
-    <svg
-      viewBox="0 0 32 32"
-      className="h-8 w-8"
+    <img
+      src="/logo2.png"
+      alt="中医体质画像服务"
+      className="h-8 w-8 object-contain"
       aria-hidden="true"
-      focusable="false"
-    >
-      <title id="tcm-portrait-logo-title">中医体质画像平台</title>
-      <rect width="32" height="32" rx="8" fill={brandLogoColor} />
-      <path
-        d="M17.2 7.2c-4 0-7.1 3.1-7.1 7.3 0 2.6 1.1 4.7 3.1 6.1.8.6 1.1 1.2 1.1 2.1v1.8h6.1v-2.1c0-.8.4-1.4 1.1-1.9 1.7-1.3 2.7-3.2 2.7-5.6 0-4.4-3-7.7-7-7.7Z"
-        fill="white"
-        opacity="0.96"
-      />
-      <path
-        d="M17 10.1c-1.7 1.7-2.6 3.7-2.6 5.9 0 2 .7 3.7 2.2 5.1"
-        fill="none"
-        stroke={brandLogoColor}
-        strokeWidth="1.35"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18.4 13.1c2.9-1.7 5.3-1.4 6.8.1-1 2.6-3.4 3.8-6.8 3.4-.2-1.2-.2-2.3 0-3.5Z"
-        fill="#CDEFF4"
-      />
-      <path
-        d="M18.7 16.2c1.9-.7 3.8-1.6 5.6-2.8M19.7 14.3l.9 1.3M21.7 13.8l.7 1.1"
-        fill="none"
-        stroke={brandLogoColor}
-        strokeWidth="0.85"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7.7 10.3V8.1h2.2M24.3 21.7v2.2h-2.2M9.1 23.9H7.7v-2.2M22.1 8.1h2.2v2.2"
-        fill="none"
-        stroke="white"
-        strokeWidth="1.35"
-        strokeLinecap="round"
-      />
-    </svg>
+      fetchPriority="high"
+    />
   );
 }
 
@@ -95,7 +61,7 @@ export function Layout() {
       >
         <SidebarHeader className="h-14 justify-center border-b border-slate-200 p-2">
           <div className="flex min-w-0 items-center gap-2.5 px-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-            <div className="shrink-0" aria-label="中医体质画像平台">
+            <div className="shrink-0" aria-label="中医体质画像服务平台">
               <TcmPortraitLogo />
             </div>
             <span className="truncate text-[15px] font-semibold text-slate-900 group-data-[collapsible=icon]:hidden">
@@ -172,15 +138,12 @@ export function Layout() {
               <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
             </Button>
             <div className="ml-2 flex cursor-pointer items-center gap-2 border-l border-slate-200 pl-3">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-[10px] font-bold text-cyan-700">
-                AD
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden bg-transparent">
+                <img src="/avatar.png" alt="大数据演示2" className="h-full w-full object-cover scale-125 object-center" />
               </div>
               <div className="hidden leading-none sm:block">
-                <div className="text-[11px] font-semibold text-slate-800">
-                  管理员
-                </div>
-                <div className="mt-0.5 text-[9px] uppercase text-slate-400">
-                  Admin
+                <div className="text-[13px] font-medium text-slate-700">
+                  大数据演示2
                 </div>
               </div>
             </div>
