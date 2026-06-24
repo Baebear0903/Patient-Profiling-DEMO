@@ -168,7 +168,13 @@ function createEmptyService(): EditableService {
 }
 
 function readSavedSnapshots(): SnapshotOption[] {
-  const saved = localStorage.getItem('savedSnapshots');
+  let saved: string | null = null;
+  try {
+    saved = localStorage.getItem('savedSnapshots');
+  } catch {
+    return fallbackSnapshots;
+  }
+  
   if (!saved) return fallbackSnapshots;
 
   try {

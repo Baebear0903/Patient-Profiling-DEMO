@@ -235,13 +235,13 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
   const [searchParams, setSearchParams] = useSearchParams();
   const createMode = searchParams.get('mode') === 'create';
   const queryValue = searchParams.get('q') ?? '';
-  const [viewMode, setViewMode] = useLocalStorage<ViewMode>('tag_mgmt_viewMode', 
+  const [viewMode, setViewMode] = useState<ViewMode>(
     createMode ? 'editor' : 'list',
   );
-  const [mainTabState, setMainTabState] = useLocalStorage<MainTab>('tag_mgmt_mainTab', 'basic');
+  const [mainTabState, setMainTabState] = useState<MainTab>('basic');
   const mainTab = theme === 'admin' ? 'basic' : mainTabState;
   const setMainTab = setMainTabState;
-  const [activeCategory, setActiveCategory] = useLocalStorage('tag_mgmt_activeCategory', mainTab === 'feature' ? '全部特色标签' : '全部');
+  const [activeCategory, setActiveCategory] = useState(mainTab === 'feature' ? '全部特色标签' : '全部');
   const [editingTag, setEditingTag] = useState<EditableTag | null>(
     createMode ? createEmptyTag() : null,
   );
@@ -256,12 +256,12 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryInput, setCategoryInput] = useState('');
   const [categorySort, setCategorySort] = useState(1);
-  const [categorySearchKw, setCategorySearchKw] = useLocalStorage('tag_mgmt_categorySearchKw', '');
+  const [categorySearchKw, setCategorySearchKw] = useState('');
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null,
   );
-  const [tagSearchKw, setTagSearchKw] = useLocalStorage('tag_mgmt_tagSearchKw', queryValue);
-  const [currentPage, setCurrentPage] = useLocalStorage('tag_mgmt_currentPage', 1);
+  const [tagSearchKw, setTagSearchKw] = useState(queryValue);
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeEditorTab, setActiveEditorTab] =
     useState<EditorTab>('basic');
   const [contextScope, setContextScope] = useState(DEFAULT_CONTEXT);
@@ -631,6 +631,10 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
   };
 
   const filteredTags = tags.filter((tag) => {
+    // 平台端（非后台）的基础标签只展示已发布
+    if (theme === 'default' && mainTab === 'basic' && tag.status !== '已发布') {
+      return false;
+    }
     const matchesCategory =
       activeCategory === '全部' || activeCategory === '全部特色标签' || tag.category === activeCategory;
     const keyword = tagSearchKw.trim().toLowerCase();

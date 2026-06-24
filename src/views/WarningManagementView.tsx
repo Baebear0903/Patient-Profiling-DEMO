@@ -54,7 +54,7 @@ import type {
   DataServiceRouteData,
   TouchpointCreateRouteState,
 } from '@/lib/route-state';
-import {mockTags, warningRecords} from '@/data/mock';
+import {mockTags, featureMockTags, warningRecords} from '@/data/mock';
 import {cn} from '@/lib/utils';
 
 const fieldOptions = [
@@ -142,7 +142,7 @@ export function WarningManagementView() {
     searchParams.get('tab') === 'records' ? 'records' : 'tags';
   const searchKeyword = searchParams.get('q') ?? '';
 
-  const [recordsFilter, setRecordsFilter] = useLocalStorage<RecordFilter>('wm_recordsFilter', '全部');
+  const [recordsFilter, setRecordsFilter] = useState<RecordFilter>('全部');
   const [selectedRecord, setSelectedRecord] = useState<WarningRecord | null>(null);
   const [recordsData, setRecordsData] = useLocalStorage<WarningRecord[]>('wm_recordsData', warningRecords);
   const detailTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -169,7 +169,9 @@ export function WarningManagementView() {
     setDataServiceModalOpen(true);
   };
 
-  const [tags] = useLocalStorage<any[]>('tag_mgmt_tags', mockTags.map(toEditableTag));
+  const [basicTags] = useLocalStorage<any[]>('tag_mgmt_basicTags_v2', mockTags.map(toEditableTag));
+  const [featureTags] = useLocalStorage<any[]>('tag_mgmt_featureTags_v2', featureMockTags.map(toEditableTag));
+  const tags = useMemo(() => [...basicTags, ...featureTags], [basicTags, featureTags]);
   
   const warningTags = useMemo<WarningTag[]>(
     () =>

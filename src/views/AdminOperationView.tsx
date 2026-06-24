@@ -22,8 +22,10 @@ export function AdminOperationView() {
     storage.set('ds_services', []);
     storage.set('ds_snapshots', []);
     storage.set('wm_recordsData', []);
-    storage.set('tag_mgmt_tags', []);
-    storage.set('tag_mgmt_categories', []);
+    storage.set('tag_mgmt_basicTags_v2', []);
+    storage.set('tag_mgmt_featureTags_v2', []);
+    storage.set('tag_mgmt_basicCategories', []);
+    storage.set('tag_mgmt_featureCategories', []);
     storage.set('pop_savedSnapshots', []);
     storage.set('pop_patients', []);
     storage.set('touchpoint_tasks', []);

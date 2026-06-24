@@ -54,7 +54,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {mockPatients, mockTags} from '@/data/mock';
+import {mockPatients, mockTags, featureMockTags} from '@/data/mock';
 import type {
   DataServiceInsertRouteState,
   DataServiceRouteData,
@@ -118,8 +118,7 @@ export function PopulationView() {
   const [isMustHaveOpen, setIsMustHaveOpen] = useState(false);
   const [isExcludeOpen, setIsExcludeOpen] = useState(false);
   const [tagSearchKw, setTagSearchKw] = useState('');
-  const [activeTab, setActiveTab] = useLocalStorage<'dynamic' | 'snapshots'>(
-    'pop_activeTab',
+  const [activeTab, setActiveTab] = useState<'dynamic' | 'snapshots'>(
     'dynamic',
   );
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -171,7 +170,10 @@ export function PopulationView() {
 
   // toEditableTag is needed to properly format the items from local storage 
   // if not we can just use the tags
-  const [tags] = useLocalStorage<any[]>('tag_mgmt_tags', mockTags);
+  const [basicTags] = useLocalStorage<any[]>('tag_mgmt_basicTags_v2', mockTags);
+  const [featureTags] = useLocalStorage<any[]>('tag_mgmt_featureTags_v2', featureMockTags);
+  const tags = useMemo(() => [...basicTags, ...featureTags], [basicTags, featureTags]);
+
   const [patients] = useLocalStorage<any[]>('pop_patients', mockPatients);
 
   const filteredTags = tags.filter(

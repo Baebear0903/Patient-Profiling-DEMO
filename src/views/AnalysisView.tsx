@@ -763,7 +763,7 @@ export function AnalysisView() {
                     <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <h2 className="text-xs font-bold text-slate-700 whitespace-nowrap">体质转归矩阵</h2>
-                        <p className="text-[10px] text-slate-500 mt-1 max-w-xl text-wrap">展示患者体质在相邻评估周期内的变化方向，识别改善、稳定及加重趋势；绿色表示向平和质或改善方向转归，红色表示加重或劣向转归。</p>
+                        <p className="text-[10px] text-slate-500 mt-1 max-w-xl text-wrap">展示患者体质在相邻评估周期内的变化方向，识别改善、稳定及加重趋势；绿色表示改善，红色表示加重。</p>
                       </div>
                     </div>
                     <div className="flex-1 w-full overflow-auto pr-2 relative">
