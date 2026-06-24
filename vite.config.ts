@@ -4,7 +4,7 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig({
-  base: './',
+  base: process.env.NODE_ENV === 'production' ? '/Patient-Profiling-DEMO/' : './',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
