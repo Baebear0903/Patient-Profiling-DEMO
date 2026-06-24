@@ -75,13 +75,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {mockTags, tagCategories, featureMockTags, featureTagCategories} from '@/data/mock';
+import {mockTags, tagCategories, featureMockTags, featureTagCategories} from '@/data/tagData';
 import {
   contextScopes,
   domainFields,
   fieldTypeOperators,
   ruleDomains,
-} from '@/data/rules';
+} from '@/data/ruleConfig';
 import {cn} from '@/lib/utils';
 
 type ViewMode = 'list' | 'editor';

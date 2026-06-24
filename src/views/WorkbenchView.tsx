@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { cn } from "../lib/utils";
-import { tcmConstitutions } from "../data/mock";
+import { tcmConstitutions } from "../data/analysisData";
 
 const COLORS = [
   "#0e7490",

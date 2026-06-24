@@ -54,7 +54,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {mockPatients, mockTags, featureMockTags} from '@/data/mock';
+import {mockPatients} from '@/data/patientData';
+import {mockTags, featureMockTags} from '@/data/tagData';
 import type {
   DataServiceInsertRouteState,
   DataServiceRouteData,

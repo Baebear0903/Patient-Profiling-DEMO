@@ -55,7 +55,8 @@ import type {
   DataServiceRouteData,
   TouchpointCreateRouteState,
 } from '@/lib/route-state';
-import {mockTags, featureMockTags, warningRecords} from '@/data/mock';
+import {mockTags, featureMockTags} from '@/data/tagData';
+import {warningRecords} from '@/data/warningData';
 import {cn} from '@/lib/utils';
 
 const fieldOptions = [

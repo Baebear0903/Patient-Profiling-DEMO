@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Sankey } from 'recharts';
-import { tcmConstitutions, ageDistribution, deptDistribution, genderDistribution, diseaseDistribution, constitutionTrendData, keyPopulationTrendData, transitionMatrixData, sankeyData, topImprovementPaths, topWorseningPaths } from '../data/mock';
+import { tcmConstitutions, ageDistribution, deptDistribution, genderDistribution, diseaseDistribution, constitutionTrendData, keyPopulationTrendData, transitionMatrixData, sankeyData, topImprovementPaths, topWorseningPaths } from '../data/analysisData';
 import { cn } from '../lib/utils';
 import { Calendar, Filter, Activity, Users, FileText, AlertCircle, TrendingUp, CheckSquare, RefreshCw, HeartPulse, Layers, Smartphone, ShieldCheck } from 'lucide-react';
 
