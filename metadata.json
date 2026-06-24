@@ -1,0 +1,8 @@
+{
+  "name": "患者画像平台",
+  "description": "基于临床数据中心(CDR)数据的患者画像与标签服务平台演示版本",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
