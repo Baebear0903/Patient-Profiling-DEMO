@@ -129,7 +129,7 @@ export const domainFields: Record<string, { name: string, code: string, type: st
     { name: "康复建议执行状态", code: "rehab_advice_execute_status", type: "enum" },
   ],
   "卒中随访记录": [
-    { name: "管理状态", code: "stroke_management_status", type: "enum" },
+    { name: "卒中管理状态", code: "stroke_management_status", type: "enum" },
     { name: "最近卒中随访时间", code: "latest_stroke_followup_time", type: "date" },
     { name: "卒中风险评估状态", code: "stroke_risk_assessment_status", type: "enum" },
     { name: "干预状态", code: "stroke_intervention_status", type: "enum" },

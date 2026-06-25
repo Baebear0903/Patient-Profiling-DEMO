@@ -120,8 +120,8 @@ export const mockTags = [
       contextScope: "SAME_PATIENT",
       conditions: [
         { id: "c1", type: "纳入条件", domain: "中医体质辨识记录", field: "九种体质", operator: "包含任一", value: "痰湿质、湿热质" },
-        { id: "c2", type: "纳入条件", domain: "检验", field: "指标名称", operator: "等于", value: "空腹血糖" },
-        { id: "c3", type: "纳入条件", domain: "检验", field: "结果值", operator: "大于等于", value: "7.0" },
+        { id: "c2", type: "纳入条件", domain: "检验检查", field: "指标名称", operator: "等于", value: "空腹血糖" },
+        { id: "c3", type: "纳入条件", domain: "检验检查", field: "结果值", operator: "大于等于", value: "7.0" },
         { id: "c4", type: "排除条件", domain: "慢病管理记录", field: "管理阶段", operator: "等于", value: "已结案" }
       ]
     }

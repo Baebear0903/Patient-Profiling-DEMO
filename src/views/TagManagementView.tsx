@@ -628,7 +628,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
       '治未病科',
       '肿瘤科',
     ];
-    return Array.from({length: Math.min(count, 55)}, (_, index) => ({
+    return Array.from({length: Math.min(count, 20)}, (_, index) => ({
       id: `P${String(10000 + index + Math.floor(Math.random() * 1000))}`,
       visitNo: `MZ${String(200000 + index + Math.floor(Math.random() * 10000))}`,
       name: names[Math.floor(Math.random() * names.length)],
@@ -1446,7 +1446,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
                 预览命中结果
               </h4>
               <div className="text-xs text-slate-600">
-                共命中{' '}
+                预计命中{' '}
                 <span className="px-1 text-base font-bold text-emerald-600">
                   {previewResults.total.toLocaleString()}
                 </span>{' '}
@@ -1798,7 +1798,7 @@ export function TagManagementView({theme = 'default'}: {theme?: 'default' | 'adm
           <SheetHeader className="border-b border-slate-200">
             <SheetTitle>预览标签数据集</SheetTitle>
             <SheetDescription>
-              标签：{previewSheetData?.tag.name}，共命中{' '}
+              标签：{previewSheetData?.tag.name}，预计命中{' '}
               {previewSheetData?.total.toLocaleString()} 名患者
             </SheetDescription>
           </SheetHeader>

@@ -262,35 +262,58 @@ export function AnalysisView() {
 
   const scaleFactor = selectedConstitutions.length / 9;
 
+  const seed = useMemo(() => {
+    let hash = 0;
+    const str = selectedConstitutions.join(',');
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return hash;
+  }, [selectedConstitutions]);
+
+  const pseudoRandom = (i: number) => {
+    const x = Math.sin(seed + i + 1) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const getPerturbedCount = (count: number, index: number) => {
+    if (scaleFactor === 1) return count;
+    if (scaleFactor === 0) return 0;
+    const baseCount = count * scaleFactor;
+    // Vary between -40% and +40%
+    const variance = (pseudoRandom(index) * 0.8) - 0.4;
+    return Math.max(0, Math.round(baseCount * (1 + variance)));
+  };
+
   const filteredDeptDistribution = useMemo(() => {
-    return deptDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
-  }, [scaleFactor]);
+    return deptDistribution.map((d, i) => ({...d, count: getPerturbedCount(d.count, i)}));
+  }, [scaleFactor, seed]);
 
   const filteredDiseaseDistribution = useMemo(() => {
-    return diseaseDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
-  }, [scaleFactor]);
+    return diseaseDistribution.map((d, i) => ({...d, count: getPerturbedCount(d.count, i + 100)}));
+  }, [scaleFactor, seed]);
 
   const pieDeptDistribution = useMemo(() => {
     if (filteredDeptDistribution.length <= 10) return filteredDeptDistribution;
-    const top10 = filteredDeptDistribution.slice(0, 10);
+    const top10 = filteredDeptDistribution.slice(0, 10).sort((a, b) => b.count - a.count);
     const otherCount = filteredDeptDistribution.slice(10).reduce((acc, curr) => acc + curr.count, 0);
     return [...top10, { name: "其他", count: otherCount }];
   }, [filteredDeptDistribution]);
 
   const pieDiseaseDistribution = useMemo(() => {
     if (filteredDiseaseDistribution.length <= 10) return filteredDiseaseDistribution;
-    const top10 = filteredDiseaseDistribution.slice(0, 10);
+    const top10 = filteredDiseaseDistribution.slice(0, 10).sort((a, b) => b.count - a.count);
     const otherCount = filteredDiseaseDistribution.slice(10).reduce((acc, curr) => acc + curr.count, 0);
     return [...top10, { name: "其他", count: otherCount }];
   }, [filteredDiseaseDistribution]);
 
   const filteredAgeDistribution = useMemo(() => {
-    return ageDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
-  }, [scaleFactor]);
+    return ageDistribution.map((d, i) => ({...d, count: getPerturbedCount(d.count, i + 200)}));
+  }, [scaleFactor, seed]);
 
   const filteredGenderDistribution = useMemo(() => {
-    return genderDistribution.map(d => ({...d, count: Math.round(d.count * scaleFactor)}));
-  }, [scaleFactor]);
+    return genderDistribution.map((d, i) => ({...d, count: getPerturbedCount(d.count, i + 300)}));
+  }, [scaleFactor, seed]);
 
   const filteredTcmConstitutions = useMemo(() => {
     return tcmConstitutions.filter(c => selectedConstitutions.includes(c.name));
