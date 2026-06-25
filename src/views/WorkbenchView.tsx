@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Plus, Tag, Send } from "lucide-react";
+import { Users, Tag, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart,
@@ -44,16 +44,7 @@ export function WorkbenchView() {
         <PageHeader
           title="运营概览"
           description="查看平台整体运行状态和关键人群指标"
-        >
-          <Button
-            size="sm"
-            className="bg-cyan-600 text-white hover:bg-cyan-700 font-semibold"
-            onClick={() => navigate("/tags?mode=create")}
-          >
-            <Plus size={14} />
-            新建标签
-          </Button>
-        </PageHeader>
+        />
       </div>
 
       {/* Stats Cards */}
@@ -273,22 +264,34 @@ export function WorkbenchView() {
         <div className="flex flex-col gap-4 lg:w-1/3 flex-shrink-0 min-w-0 flex-1">
           <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm relative overflow-hidden flex-shrink-0">
             <h3 className="text-xs font-bold text-slate-700 mb-3">快捷操作</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <Button
+                variant="ghost"
+                className="h-auto items-start justify-start p-3 bg-slate-50 border border-slate-100 rounded hover:bg-blue-50 hover:border-blue-200 transition text-left flex flex-col gap-2"
+                onClick={() => navigate("/tags")}
+              >
+                <Tag size={16} className="text-blue-500" />
+                <span className="text-[11px] font-medium text-slate-700">
+                  管理画像标签
+                </span>
+              </Button>
               <Button
                 variant="ghost"
                 className="h-auto items-start justify-start p-3 bg-slate-50 border border-slate-100 rounded hover:bg-cyan-50 hover:border-cyan-200 transition text-left flex flex-col gap-2"
+                onClick={() => navigate("/population")}
               >
                 <Users size={16} className="text-cyan-600" />
-                <span className="text-xs font-medium text-slate-700">
+                <span className="text-[11px] font-medium text-slate-700">
                   新建动态人群
                 </span>
               </Button>
               <Button
                 variant="ghost"
                 className="h-auto items-start justify-start p-3 bg-slate-50 border border-slate-100 rounded hover:border-amber-200 hover:bg-amber-50 transition text-left flex flex-col gap-2"
+                onClick={() => navigate("/touchpoint")}
               >
                 <Send size={16} className="text-amber-500" />
-                <span className="text-xs font-medium text-slate-700">
+                <span className="text-[11px] font-medium text-slate-700">
                   发起体质宣教
                 </span>
               </Button>

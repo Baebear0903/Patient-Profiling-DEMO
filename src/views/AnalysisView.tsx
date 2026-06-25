@@ -600,6 +600,17 @@ export function AnalysisView() {
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 flex items-center gap-3">
+              <div className="bg-indigo-50 p-2 rounded-md">
+                <Activity className="text-indigo-500" size={18} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 font-medium">体质评估人次</p>
+                <div className="flex items-baseline gap-1">
+                  <h3 className="text-lg font-bold text-slate-800">125,430</h3>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 flex items-center gap-3">
               <div className="bg-amber-50 p-2 rounded-md">
                 <TrendingUp className="text-amber-500" size={18} />
               </div>
@@ -618,17 +629,6 @@ export function AnalysisView() {
                 <p className="text-xs text-slate-500 font-medium">异常预警人数</p>
                 <div className="flex items-baseline gap-1">
                   <h3 className="text-lg font-bold text-slate-800">5,200</h3>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 shrink-0 flex items-center gap-3">
-              <div className="bg-indigo-50 p-2 rounded-md">
-                <Activity className="text-indigo-500" size={18} />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-medium">体质评估人次</p>
-                <div className="flex items-baseline gap-1">
-                  <h3 className="text-lg font-bold text-slate-800">125,430</h3>
                 </div>
               </div>
             </div>
