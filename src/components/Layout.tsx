@@ -37,7 +37,7 @@ const menuItems = [
 function TcmPortraitLogo() {
   return (
     <img
-      src="/logo2.png"
+      src={`${import.meta.env.BASE_URL}logo2.png`}
       alt="中医体质画像服务"
       className="h-8 w-8 object-contain"
       aria-hidden="true"
@@ -139,7 +139,7 @@ export function Layout() {
             </Button>
             <div className="ml-2 flex cursor-pointer items-center gap-2 border-l border-slate-200 pl-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden bg-transparent">
-                <img src="/avatar.png" alt="大数据演示2" className="h-full w-full object-cover scale-125 object-center" />
+                <img src={`${import.meta.env.BASE_URL}avatar.png`} alt="大数据演示2" className="h-full w-full object-cover scale-125 object-center" />
               </div>
               <div className="hidden leading-none sm:block">
                 <div className="text-[13px] font-medium text-slate-700">
